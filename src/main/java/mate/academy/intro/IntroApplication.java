@@ -7,14 +7,14 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class IntroApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(IntroApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(IntroApplication.class, args);
+    }
 
-	@Bean
-	public CommandLineRunner commandLineRunner() {
-		return args -> {
-			System.out.println("done");
-		};
-	}
+    @Bean
+    public CommandLineRunner commandLineRunner() {
+        return args -> {
+            System.out.println("done");
+        };
+    }
 }
