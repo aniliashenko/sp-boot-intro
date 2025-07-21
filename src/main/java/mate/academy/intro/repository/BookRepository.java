@@ -6,5 +6,5 @@ import mate.academy.intro.model.Book;
 public interface BookRepository {
     Book save(Book book);
 
-    List<Book> findall();
+    List<Book> findAll();
 }

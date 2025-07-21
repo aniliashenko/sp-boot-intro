@@ -1,14 +1,18 @@
 package mate.academy.intro.repository.impl;
 
+import java.util.List;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 import mate.academy.intro.model.Book;
 import mate.academy.intro.repository.BookRepository;
+import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class BookRepositoryImpl implements BookRepository {
     @PersistenceContext
     private EntityManager entityManager;
@@ -16,17 +20,15 @@ public class BookRepositoryImpl implements BookRepository {
     @Override
     @Transactional
     public Book save(Book book) {
-        if (book.getId() == null) {
-            entityManager.persist(book);
-            return book;
-        } else {
-            return entityManager.merge(book);
-        }
+        Session session = entityManager.unwrap(Session.class);
+        session.persist(book);
+        return book;
     }
 
     @Override
-    public List<Book> findall() {
-        return entityManager.createQuery("SELECT b FROM Book b", Book.class)
-                .getResultList();
+    @Transactional
+    public List<Book> findAll() {
+        Session session = entityManager.unwrap(Session.class);
+        return session.createQuery("from Book", Book.class).getResultList();
     }
 }
