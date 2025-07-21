@@ -1,6 +1,5 @@
 package mate.academy.intro.service.impl;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.model.Book;
