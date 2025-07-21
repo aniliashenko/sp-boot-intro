@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD Suppression DTD 1.1//EN"
+        "https://checkstyle.org/dtds/suppressions_1_1.dtd">
+<suppressions>
+    <suppress checks=".*" files=".*generated.*"/>
+    <suppress checks="LineLength" files=".*Test.*"/>
+</suppressions>
