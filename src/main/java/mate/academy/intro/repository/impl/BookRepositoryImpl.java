@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.model.Book;
 import mate.academy.intro.repository.BookRepository;
@@ -18,7 +19,7 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     @Transactional
-    public Book save(Book book) {
+    public Book createBook(Book book) {
         Session session = entityManager.unwrap(Session.class);
         session.persist(book);
         return book;
@@ -26,8 +27,14 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     @Transactional
-    public List<Book> findAll() {
+    public List<Book> getAll() {
         Session session = entityManager.unwrap(Session.class);
         return session.createQuery("from Book", Book.class).getResultList();
+    }
+
+    @Override
+    public Optional<Book> getBookById(Long id) {
+        Book book = entityManager.find(Book.class, id);
+        return Optional.ofNullable(book);
     }
 }
