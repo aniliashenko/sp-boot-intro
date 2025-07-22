@@ -1,13 +1,13 @@
 package mate.academy.intro.repository;
 
-import java.util.List;
-import java.util.Optional;
 import mate.academy.intro.model.Book;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-public interface BookRepository {
-    Book createBook(Book book);
+public interface BookRepository extends JpaRepository<Book, Long> {
+    @Query("UPDATE Book b SET b.title = :title, b.author = :author WHERE b.id = :id")
+    Book updateBookById(Long id, Book book);
 
-    List<Book> getAll();
-
-    Optional<Book> getBookById(Long id);
+    @Query("DELETE FROM Book b WHERE b.id = :id")
+    Book deleteBookById(Long id);
 }
