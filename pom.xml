@@ -90,6 +90,18 @@
 			<version>1.18.30</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+			<version>${liquibase.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.200</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -137,6 +149,12 @@
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-maven-plugin</artifactId>
+				<version>${liquibase.version}</version>
 			</plugin>
 		</plugins>
 	</build>
