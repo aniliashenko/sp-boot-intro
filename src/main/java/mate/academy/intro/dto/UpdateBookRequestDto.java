@@ -10,9 +10,9 @@ import lombok.Data;
 public class UpdateBookRequestDto {
     @NotBlank
     private String title;
-    @NotNull
+    @NotBlank
     private String author;
-    @NotNull
+    @NotBlank
     private String isbn;
     @NotNull
     @Positive
