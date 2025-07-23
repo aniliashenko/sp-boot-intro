@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -32,20 +31,17 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    @ResponseBody
     public BookDto getBookById(@PathVariable Long id) {
         return bookService.getBookById(id);
     }
 
     @PutMapping("/{id}")
-    @ResponseBody
     public BookDto updateBookById(@PathVariable Long id,
                                   @RequestBody CreateBookRequestDto requestDto) {
         return bookService.updateBookById(id, requestDto);
     }
 
     @DeleteMapping
-    @ResponseBody
     public BookDto deleteBookById(@PathVariable Long id) {
         return bookService.deleteBookById(id);
     }
