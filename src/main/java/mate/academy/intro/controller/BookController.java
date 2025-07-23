@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.BookDto;
 import mate.academy.intro.dto.BookSearchParametersDto;
 import mate.academy.intro.dto.CreateBookRequestDto;
+import mate.academy.intro.dto.UpdateBookRequestDto;
 import mate.academy.intro.service.BookService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +31,8 @@ public class BookController {
     }
 
     @GetMapping
-    public List<BookDto> getAll() {
-        return bookService.getAll();
+    public Page<BookDto> getAll(Pageable pageable) {
+        return bookService.findAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -39,13 +42,13 @@ public class BookController {
 
     @PutMapping("/{id}")
     public BookDto updateBookById(@PathVariable Long id,
-                                  @RequestBody CreateBookRequestDto requestDto) {
+                                  @RequestBody UpdateBookRequestDto requestDto) {
         return bookService.updateBookById(id, requestDto);
     }
 
     @DeleteMapping
-    public BookDto deleteBookById(@PathVariable Long id) {
-        return bookService.deleteBookById(id);
+    public void deleteBookById(@PathVariable Long id) {
+        bookService.deleteBookById(id);
     }
 
     @GetMapping("/search")
