@@ -10,6 +10,7 @@ import mate.academy.intro.dto.UpdateBookRequestDto;
 import mate.academy.intro.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class BookController {
     }
 
     @GetMapping
-    public Page<BookDto> getAll(Pageable pageable) {
+    public Page<BookDto> findAll(@PageableDefault(size = 10, sort = "title") Pageable pageable) {
         return bookService.findAll(pageable);
     }
 
@@ -56,7 +57,8 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    public List<BookDto> search(BookSearchParametersDto parametersDto) {
-        return bookService.search(parametersDto);
+    public List<BookDto> search(BookSearchParametersDto parametersDto,
+                                @PageableDefault(size = 10, sort = "title") Pageable pageable) {
+        return bookService.search(parametersDto, pageable);
     }
 }

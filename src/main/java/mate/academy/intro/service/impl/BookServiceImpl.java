@@ -14,7 +14,6 @@ import mate.academy.intro.repository.BookSpecificationBuilder;
 import mate.academy.intro.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -63,9 +62,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookDto> search(BookSearchParametersDto parametersDto) {
+    public List<BookDto> search(BookSearchParametersDto parametersDto, Pageable pageable) {
         Specification<Book> bookSpecification = bookSpecificationBuilder.build(parametersDto);
-        return bookRepository.findAll((Sort) bookSpecification)
+        return bookRepository.findAll(bookSpecification, pageable)
                 .stream()
                 .map(bookMapper::toDto)
                 .toList();
