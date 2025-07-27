@@ -1,6 +1,5 @@
 package mate.academy.intro.service.impl;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.BookDto;
 import mate.academy.intro.dto.BookSearchParametersDto;
@@ -62,11 +61,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookDto> search(BookSearchParametersDto parametersDto, Pageable pageable) {
+    public Page<BookDto> search(BookSearchParametersDto parametersDto, Pageable pageable) {
         Specification<Book> bookSpecification = bookSpecificationBuilder.build(parametersDto);
         return bookRepository.findAll(bookSpecification, pageable)
-                .stream()
-                .map(bookMapper::toDto)
-                .toList();
+                .map(bookMapper::toDto);
     }
 }
