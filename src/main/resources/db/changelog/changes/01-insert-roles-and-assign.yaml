@@ -1,0 +1,83 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-insert-roles
+      author: anton
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 1
+              - column:
+                  name: role
+                  value: ROLE_USER
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 2
+              - column:
+                  name: role
+                  value: ROLE_ADMIN
+
+  - changeSet:
+      id: 2-insert-admin-user
+      author: anton
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 1
+              - column:
+                  name: email
+                  value: admin@example.com
+              - column:
+                  name: password
+                  value: $2a$10$7qbn4cr6u/URZY4OjByX8uw6a5cKDvKtOARpXegXObmuG1NdSxyvO  # password: admin123
+              - column:
+                  name: first_name
+                  value: Admin
+              - column:
+                  name: last_name
+                  value: User
+
+  - changeSet:
+      id: 3-assign-roles-to-admin
+      author: anton
+      changes:
+        - insert:
+            tableName: users_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueNumeric: 1
+              - column:
+                  name: role_id
+                  valueNumeric: 2
+        - insert:
+            tableName: users_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueNumeric: 1
+              - column:
+                  name: role_id
+                  valueNumeric: 1
+
+  - changeSet:
+      id: 4-assign-user-role-to-all
+      author: anton
+      runOnChange: true
+      changes:
+        - sql:
+            splitStatements: false
+            sql: |
+              INSERT INTO users_roles (user_id, role_id)
+              SELECT u.id, 1 FROM users u
+              WHERE NOT EXISTS (
+                SELECT 1 FROM users_roles ur WHERE ur.user_id = u.id
+              );
