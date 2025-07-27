@@ -34,6 +34,6 @@ public class CustomGlobalExceptionHandler {
 
     @ExceptionHandler(RegistrationException.class)
     public ResponseEntity<String> handleRegistrationException(RegistrationException ex) {
-        return new ResponseEntity<>("Registration exception occurred", HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>("Registration exception occurred", HttpStatus.CONFLICT);
     }
 }
