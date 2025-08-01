@@ -20,7 +20,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UserResponseDto register(UserRegistrationRequestDto requestDto)
             throws RegistrationException {
-        Optional<User> existingUser = userRepository.existByEmail(requestDto.getEmail());
+        Optional<User> existingUser = userRepository.existsByEmail(requestDto.getEmail());
         if (existingUser.isPresent()) {
             throw new RegistrationException("User with this email already exists");
         }
