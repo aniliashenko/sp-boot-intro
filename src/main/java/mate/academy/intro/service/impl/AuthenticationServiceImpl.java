@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
-    private static final Long ROLE_USER_ID = 1L;
+    private static final Role.RoleName ROLE_NAME_USER = Role.RoleName.USER;
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -44,16 +44,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
 
-        Role userRole = roleRepository.findById(ROLE_USER_ID)
+        Role userRole = roleRepository.findByRoleName(ROLE_NAME_USER)
                 .orElseThrow(() -> {
-                    LOGGER.error("ROLE_USER with id {} not found", ROLE_USER_ID);
+                    LOGGER.error("ROLE_USER with id {} not found", ROLE_NAME_USER);
                     return new RegistrationException("Default role not found");
                 });
         user.setRoles(Collections.singleton(userRole));
 
-        User savedUser = userRepository.save(user);
-        LOGGER.info("User registered successfully: {}", savedUser.getEmail());
+        userRepository.save(user);
+        LOGGER.info("User registered successfully: {}", user.getEmail());
 
-        return userMapper.toDto(savedUser);
+        return userMapper.toDto(user);
     }
 }

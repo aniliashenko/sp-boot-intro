@@ -67,17 +67,3 @@ databaseChangeLog:
               - column:
                   name: role_id
                   valueNumeric: 1
-
-  - changeSet:
-      id: 4-assign-user-role-to-all
-      author: anton
-      runOnChange: true
-      changes:
-        - sql:
-            splitStatements: false
-            sql: |
-              INSERT INTO users_roles (user_id, role_id)
-              SELECT u.id, 1 FROM users u
-              WHERE NOT EXISTS (
-                SELECT 1 FROM users_roles ur WHERE ur.user_id = u.id
-              );
