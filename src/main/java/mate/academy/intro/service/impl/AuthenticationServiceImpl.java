@@ -33,7 +33,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public UserResponseDto register(UserRegistrationRequestDto requestDto)
             throws RegistrationException {
-        Optional<User> existingUser = userRepository.findByEmail(requestDto.getEmail());
+        Optional<User> existingUser = userRepository.existsByEmail(requestDto.getEmail());
         if (existingUser.isPresent()) {
             LOGGER.warn("Registration failed: Email {} already exists", requestDto.getEmail());
             throw new RegistrationException("User with email "
