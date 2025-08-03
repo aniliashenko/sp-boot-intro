@@ -1,6 +1,5 @@
 package mate.academy.intro.service.impl;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.UserRegistrationRequestDto;
 import mate.academy.intro.dto.UserResponseDto;
@@ -20,9 +19,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UserResponseDto register(UserRegistrationRequestDto requestDto)
             throws RegistrationException {
-        Optional<User> existingUser = userRepository.existsByEmail(requestDto.getEmail());
-        if (existingUser.isPresent()) {
-            throw new RegistrationException("User with this email already exists");
+        if (userRepository.existsByEmail(requestDto.getEmail())) {
+            throw new RegistrationException("User with this email already exists: " + requestDto.getEmail());
         }
 
         User user = userMapper.toModel(requestDto);
