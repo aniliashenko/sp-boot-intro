@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mate.academy.intro.dto.UserLoginRequestDto;
+import mate.academy.intro.dto.UserLoginResponseDto;
 import mate.academy.intro.dto.UserRegistrationRequestDto;
-import mate.academy.intro.dto.UserResponseDto;
+import mate.academy.intro.dto.UserRegistrationResponseDto;
 import mate.academy.intro.exception.RegistrationException;
 import mate.academy.intro.service.AuthenticationService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +37,7 @@ public class AuthenticationController {
                     description = "User successfully registered",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserResponseDto.class)
+                            schema = @Schema(implementation = UserRegistrationResponseDto.class)
                     )
             ),
             @ApiResponse(
@@ -61,9 +63,14 @@ public class AuthenticationController {
             )
     })
     @PostMapping("/registration")
-    public UserResponseDto register(
+    public UserRegistrationResponseDto register(
             @Valid @RequestBody UserRegistrationRequestDto requestDto
     ) throws RegistrationException {
         return authenticationService.register(requestDto);
+    }
+
+    @PostMapping("/login")
+    public UserLoginResponseDto login(@RequestBody UserLoginRequestDto request) {
+        return authenticationService.authenticate(request);
     }
 }

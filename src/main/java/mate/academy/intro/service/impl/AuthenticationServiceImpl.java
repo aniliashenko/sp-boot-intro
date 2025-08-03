@@ -3,8 +3,10 @@ package mate.academy.intro.service.impl;
 import jakarta.transaction.Transactional;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
+import mate.academy.intro.dto.UserLoginRequestDto;
+import mate.academy.intro.dto.UserLoginResponseDto;
 import mate.academy.intro.dto.UserRegistrationRequestDto;
-import mate.academy.intro.dto.UserResponseDto;
+import mate.academy.intro.dto.UserRegistrationResponseDto;
 import mate.academy.intro.exception.RegistrationException;
 import mate.academy.intro.mapper.UserMapper;
 import mate.academy.intro.model.Role;
@@ -22,10 +24,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Override
     @Transactional
-    public UserResponseDto register(UserRegistrationRequestDto requestDto)
+    public UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto)
             throws RegistrationException {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             throw new RegistrationException("User with email "
@@ -45,5 +48,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
 
         return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserLoginResponseDto authenticate(UserLoginRequestDto requestDto) {
+        String token = jwtUtil.generateToken(requestDto.email());
+        return null;
     }
 }
