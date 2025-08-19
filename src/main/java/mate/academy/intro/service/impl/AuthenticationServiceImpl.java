@@ -1,7 +1,7 @@
 package mate.academy.intro.service.impl;
 
 import jakarta.transaction.Transactional;
-import java.util.Collections;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.UserRegistrationRequestDto;
 import mate.academy.intro.dto.UserResponseDto;
@@ -31,19 +31,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RegistrationException("User with email "
                     + requestDto.getEmail() + " already exists");
         }
-
         User user = userMapper.toModel(requestDto);
-
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-
         Role userRole = roleRepository.findByRole(Role.RoleName.USER)
                 .orElseThrow(() -> {
                     return new RegistrationException("Default role not found");
                 });
-        user.setRoles(Collections.singleton(userRole));
-
+        user.setRoles(Set.of(userRole));
         userRepository.save(user);
-
         return userMapper.toDto(user);
     }
 }
