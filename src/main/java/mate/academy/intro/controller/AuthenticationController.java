@@ -74,7 +74,8 @@ public class AuthenticationController {
     @PostMapping("/login")
     @Operation(
             summary = "Authenticate a user",
-            description = "Logs in an existing user and returns an authentication token with user details."
+            description = "Logs in an existing user and returns an authentication "
+                    + "token with user details."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -91,7 +92,8 @@ public class AuthenticationController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"error\": \"Validation failed: email and password must not be blank\"}"
+                                    value = "{\"error\": \"Validation failed: "
+                                            + "email and password must not be blank\"}"
                             )
                     )
             ),

@@ -10,8 +10,8 @@ public class UserLoginRequestDto {
     @NotBlank
     @Size(min = 8, max = 20)
     @Email
-    String email;
+    private String email;
     @NotBlank
     @Size(min = 8, max = 20)
-    String password;
+    private String password;
 }
