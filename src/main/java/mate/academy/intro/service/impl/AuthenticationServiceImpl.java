@@ -33,6 +33,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         User user = userMapper.toModel(requestDto);
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        // removed logger
         Role userRole = roleRepository.findByRole(Role.RoleName.USER)
                 .orElseThrow(() -> {
                     return new RegistrationException("Default role not found");
