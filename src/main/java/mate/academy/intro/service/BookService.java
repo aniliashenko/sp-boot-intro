@@ -7,6 +7,8 @@ import mate.academy.intro.dto.UpdateBookRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface BookService {
     BookDto createBook(CreateBookRequestDto requestDto);
 
@@ -19,4 +21,6 @@ public interface BookService {
     void deleteBookById(Long id);
 
     Page<BookDto> search(BookSearchParametersDto parametersDto, Pageable pageable);
+
+    List getBooksByCategoryId(Long id);
 }

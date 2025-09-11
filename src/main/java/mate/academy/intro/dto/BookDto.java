@@ -2,7 +2,10 @@ package mate.academy.intro.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Data;
+import mate.academy.intro.model.Category;
 
 @Data
 @Schema(description = "Book data transfer object containing complete book information")
@@ -30,4 +33,8 @@ public class BookDto {
     @Schema(description = "URL to the book cover image",
             example = "https://example.com/great-gatsby.jpg")
     private String coverImage;
+
+    @Schema(description = "Categories of the book",
+            example = "Romance, Fantasy")
+    private Set<Category> categories = new HashSet<>();
 }

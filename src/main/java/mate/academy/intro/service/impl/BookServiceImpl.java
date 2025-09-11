@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
@@ -65,5 +67,10 @@ public class BookServiceImpl implements BookService {
         Specification<Book> bookSpecification = bookSpecificationBuilder.build(parametersDto);
         return bookRepository.findAll(bookSpecification, pageable)
                 .map(bookMapper::toDto);
+    }
+
+    @Override
+    public List getBooksByCategoryId(Long id) {
+        return bookRepository.findAllByCategoryId(id);
     }
 }
