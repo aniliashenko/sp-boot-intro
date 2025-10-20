@@ -1,43 +1,27 @@
 package mate.academy.intro.service.impl;
 
-import jakarta.transaction.Transactional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import mate.academy.intro.dto.UserRegistrationRequestDto;
-import mate.academy.intro.dto.UserResponseDto;
-import mate.academy.intro.exception.RegistrationException;
-import mate.academy.intro.mapper.UserMapper;
-import mate.academy.intro.model.Role;
-import mate.academy.intro.model.User;
-import mate.academy.intro.repository.RoleRepository;
-import mate.academy.intro.repository.UserRepository;
+import mate.academy.intro.dto.UserLoginRequestDto;
+import mate.academy.intro.dto.UserLoginResponseDto;
 import mate.academy.intro.service.AuthenticationService;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager manager;
+    private final JwtUtil jwtUtil;
 
     @Override
-    @Transactional
-    public UserResponseDto register(UserRegistrationRequestDto requestDto)
-            throws RegistrationException {
-        if (userRepository.existsByEmail(requestDto.getEmail())) {
-            throw new RegistrationException("User with email "
-                    + requestDto.getEmail() + " already exists");
-        }
-        User user = userMapper.toModel(requestDto);
-        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-        Role userRole = roleRepository.findByRole(Role.RoleName.USER)
-                .orElseThrow(() -> new RegistrationException(
-                        "Default role " + Role.RoleName.USER.name() + " not found"));
-        user.setRoles(Set.of(userRole));
-        userRepository.save(user);
-        return userMapper.toDto(user);
+    public UserLoginResponseDto authenticate(UserLoginRequestDto requestDto) {
+        final Authentication authentication = manager
+                .authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                requestDto.getEmail(), requestDto.getPassword()));
+        String token = jwtUtil.generateToken(authentication.getName());
+        return new UserLoginResponseDto(token);
     }
 }
