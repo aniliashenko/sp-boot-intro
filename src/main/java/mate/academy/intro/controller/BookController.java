@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +45,7 @@ public class BookController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public BookDto createBook(@RequestBody @Valid CreateBookRequestDto bookDto) {
         return bookService.createBook(bookDto);
     }
@@ -55,6 +57,7 @@ public class BookController {
                             schema = @Schema(implementation = Page.class))})
     })
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public Page<BookDto> findAll(@PageableDefault(size = 10, sort = "title") Pageable pageable) {
         return bookService.findAll(pageable);
     }
@@ -68,6 +71,7 @@ public class BookController {
                     content = @Content)
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public BookDto getBookById(@PathVariable Long id) {
         return bookService.getBookById(id);
     }
@@ -83,6 +87,7 @@ public class BookController {
                     content = @Content)
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public BookDto updateBookById(@PathVariable Long id,
                                   @RequestBody @Valid UpdateBookRequestDto requestDto) {
         return bookService.updateBookById(id, requestDto);
@@ -94,8 +99,9 @@ public class BookController {
             @ApiResponse(responseCode = "404", description = "Book not found",
                     content = @Content)
     })
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void deleteBookById(@PathVariable Long id) {
         bookService.deleteBookById(id);
     }
@@ -107,6 +113,7 @@ public class BookController {
                             schema = @Schema(implementation = Page.class))})
     })
     @GetMapping("/search")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public Page<BookDto> search(BookSearchParametersDto parametersDto,
                                 @PageableDefault(size = 10, sort = "title") Pageable pageable) {
         return bookService.search(parametersDto, pageable);
