@@ -2,6 +2,7 @@ package mate.academy.intro.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
+import java.util.Set;
 import lombok.Data;
 
 @Data
@@ -30,4 +31,6 @@ public class BookDto {
     @Schema(description = "URL to the book cover image",
             example = "https://example.com/great-gatsby.jpg")
     private String coverImage;
+
+    private Set<Long> categoryIds;
 }

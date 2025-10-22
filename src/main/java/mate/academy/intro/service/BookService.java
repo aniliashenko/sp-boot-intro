@@ -1,6 +1,8 @@
 package mate.academy.intro.service;
 
+import java.util.List;
 import mate.academy.intro.dto.BookDto;
+import mate.academy.intro.dto.BookDtoWithoutCategoryIds;
 import mate.academy.intro.dto.BookSearchParametersDto;
 import mate.academy.intro.dto.CreateBookRequestDto;
 import mate.academy.intro.dto.UpdateBookRequestDto;
@@ -19,4 +21,6 @@ public interface BookService {
     void deleteBookById(Long id);
 
     Page<BookDto> search(BookSearchParametersDto parametersDto, Pageable pageable);
+
+    List<BookDtoWithoutCategoryIds> getBooksByCategoryId(Long categoryId);
 }
