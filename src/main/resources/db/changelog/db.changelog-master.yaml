@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changes/05-insert-roles-and-assign.yaml
   - include:
       file: db/changelog/changes/06-add-category.yaml
+  - include:
+      file: db/changelog/changes/07-create-shopping-cart-and-cart-item.yaml
