@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.UserLoginRequestDto;
 import mate.academy.intro.dto.UserLoginResponseDto;
@@ -16,9 +17,12 @@ import mate.academy.intro.dto.UserRegistrationResponseDto;
 import mate.academy.intro.exception.RegistrationException;
 import mate.academy.intro.service.AuthenticationService;
 import mate.academy.intro.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
@@ -110,5 +114,11 @@ public class AuthenticationController {
     })
     public UserLoginResponseDto login(@RequestBody @Valid UserLoginRequestDto request) {
         return authenticationService.authenticate(request);
+    }
+
+    @ExceptionHandler(RegistrationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleRegistrationException(RegistrationException ex) {
+        return Map.of("error", ex.getMessage());
     }
 }
