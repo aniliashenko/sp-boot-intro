@@ -12,9 +12,11 @@ import mate.academy.intro.dto.AddBookToCartRequestDto;
 import mate.academy.intro.dto.CartItemResponseDto;
 import mate.academy.intro.dto.ShoppingCartResponseDto;
 import mate.academy.intro.dto.UpdateCartItemQuantityRequestDto;
+import mate.academy.intro.model.User;
 import mate.academy.intro.service.ShoppingCartService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,7 +43,8 @@ public class ShoppingCartController {
     })
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public ShoppingCartResponseDto getCart(@RequestParam Long userId) {
+    public ShoppingCartResponseDto getCart(Authentication authentication) {
+        Long userId = getUserId(authentication);
         return shoppingCartService.getUserCart(userId);
     }
 
@@ -58,8 +60,9 @@ public class ShoppingCartController {
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ShoppingCartResponseDto addBookToCart(
-            @RequestParam Long userId,
+            Authentication authentication,
             @RequestBody @Valid AddBookToCartRequestDto requestDto) {
+        Long userId = getUserId(authentication);
         return shoppingCartService.addBookToCart(userId, requestDto);
     }
 
@@ -73,12 +76,13 @@ public class ShoppingCartController {
             @ApiResponse(responseCode = "404",
                     description = "Cart item not found", content = @Content)
     })
-    @PutMapping("/items/{cartItemId}")
+    @PutMapping("/cart-items/{cartItemId}")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public CartItemResponseDto updateCartItem(
-            @RequestParam Long userId,
+            Authentication authentication,
             @PathVariable Long cartItemId,
             @RequestBody @Valid UpdateCartItemQuantityRequestDto requestDto) {
+        Long userId = getUserId(authentication);
         return shoppingCartService.updateCartItem(userId, cartItemId, requestDto);
     }
 
@@ -89,12 +93,18 @@ public class ShoppingCartController {
             @ApiResponse(responseCode = "404",
                     description = "Cart item not found", content = @Content)
     })
-    @DeleteMapping("/items/{cartItemId}")
+    @DeleteMapping("/cart-items/{cartItemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public void removeCartItem(
-            @RequestParam Long userId,
+            Authentication authentication,
             @PathVariable Long cartItemId) {
+        Long userId = getUserId(authentication);
         shoppingCartService.removeCartItem(userId, cartItemId);
+    }
+
+    private Long getUserId(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return user.getId();
     }
 }

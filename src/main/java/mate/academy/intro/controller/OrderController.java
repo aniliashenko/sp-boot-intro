@@ -13,19 +13,20 @@ import mate.academy.intro.dto.CreateOrderRequestDto;
 import mate.academy.intro.dto.OrderItemResponseDto;
 import mate.academy.intro.dto.OrderResponseDto;
 import mate.academy.intro.dto.UpdateOrderStatusRequestDto;
+import mate.academy.intro.model.User;
 import mate.academy.intro.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,8 +49,9 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public OrderResponseDto placeOrder(@RequestParam Long userId,
+    public OrderResponseDto placeOrder(Authentication authentication,
                                        @RequestBody @Valid CreateOrderRequestDto requestDto) {
+        Long userId = getUserId(authentication);
         return orderService.placeOrder(userId, requestDto);
     }
 
@@ -61,9 +63,10 @@ public class OrderController {
     })
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public Page<OrderResponseDto> getOrders(@RequestParam Long userId,
+    public Page<OrderResponseDto> getOrders(Authentication authentication,
                                             @PageableDefault(size = 10,
                                                     sort = "orderDate") Pageable pageable) {
+        Long userId = getUserId(authentication);
         return orderService.getUserOrders(userId, pageable);
     }
 
@@ -77,8 +80,9 @@ public class OrderController {
     })
     @GetMapping("/{orderId}/items")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public List<OrderItemResponseDto> getOrderItems(@RequestParam Long userId,
+    public List<OrderItemResponseDto> getOrderItems(Authentication authentication,
                                                     @PathVariable Long orderId) {
+        Long userId = getUserId(authentication);
         return orderService.getOrderItems(userId, orderId);
     }
 
@@ -92,9 +96,10 @@ public class OrderController {
     })
     @GetMapping("/{orderId}/items/{itemId}")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public OrderItemResponseDto getOrderItem(@RequestParam Long userId,
+    public OrderItemResponseDto getOrderItem(Authentication authentication,
                                              @PathVariable Long orderId,
                                              @PathVariable Long itemId) {
+        Long userId = getUserId(authentication);
         return orderService.getOrderItem(userId, orderId, itemId);
     }
 
@@ -105,10 +110,15 @@ public class OrderController {
                             schema = @Schema(implementation = OrderResponseDto.class))}),
             @ApiResponse(responseCode = "404", description = "Order not found", content = @Content)
     })
-    @PatchMapping("/{id}")
+    @PatchMapping("/{orderId}/status")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public OrderResponseDto updateStatus(@PathVariable Long id,
-                    @RequestBody @Valid UpdateOrderStatusRequestDto requestDto) {
-        return orderService.updateOrderStatus(id, requestDto);
+    public OrderResponseDto updateStatus(@PathVariable Long orderId,
+                            @RequestBody @Valid UpdateOrderStatusRequestDto requestDto) {
+        return orderService.updateOrderStatus(orderId, requestDto);
+    }
+
+    private Long getUserId(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return user.getId();
     }
 }
