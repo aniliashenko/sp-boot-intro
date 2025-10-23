@@ -44,16 +44,16 @@ public class Order {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal total;
 
-    @Column(name = "order_date", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime orderDate;
 
-    @Column(name = "shipping_address", nullable = false)
+    @Column(nullable = false)
     private String shippingAddress;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL,
             orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<OrderItem> orderItems = new HashSet<>();
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(nullable = false)
     private boolean isDeleted = false;
 }
