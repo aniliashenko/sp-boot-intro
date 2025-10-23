@@ -8,10 +8,12 @@ import mate.academy.intro.dto.ShoppingCartResponseDto;
 import mate.academy.intro.model.ShoppingCart;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(config = MapperConfig.class, uses = {CartItemMapper.class})
 public interface ShoppingCartMapper {
+    @Mapping(source = "user.id", target = "userId")
     ShoppingCartResponseDto toDto(ShoppingCart cart);
 
     @AfterMapping
