@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.CategoryDto;
+import mate.academy.intro.dto.CategoryRequestDto;
+import mate.academy.intro.exception.EntityNotFoundException;
 import mate.academy.intro.mapper.CategoryMapper;
 import mate.academy.intro.model.Category;
 import mate.academy.intro.repository.CategoryRepository;
@@ -28,28 +30,27 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto getById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() ->
-                        new NoSuchElementException("Category not found with id: " + id));
+                        new EntityNotFoundException("Category not found with id: " + id));
         return categoryMapper.toDto(category);
     }
 
     @Override
     @Transactional
-    public CategoryDto save(CategoryDto categoryDto) {
+    public CategoryDto save(CategoryRequestDto categoryDto) {
         Category category = categoryMapper.toEntity(categoryDto);
-        Category savedCategory = categoryRepository.save(category);
-        return categoryMapper.toDto(savedCategory);
+        categoryRepository.save(category);
+        return categoryMapper.toDto(category);
     }
 
     @Override
     @Transactional
-    public CategoryDto update(Long id, CategoryDto categoryDto) {
+    public CategoryDto update(Long id, CategoryRequestDto categoryDto) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() ->
                         new NoSuchElementException(
                                 "Cannot update. Category not found with id: " + id));
 
-        existingCategory.setName(categoryDto.getName());
-        existingCategory.setDescription(categoryDto.getDescription());
+        categoryMapper.updateCategoryFromDto(categoryDto, existingCategory);
 
         Category updatedCategory = categoryRepository.save(existingCategory);
         return categoryMapper.toDto(updatedCategory);
