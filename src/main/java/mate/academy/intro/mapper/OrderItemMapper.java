@@ -9,8 +9,5 @@ import org.mapstruct.Mapping;
 @Mapper(config = MapperConfig.class)
 public interface OrderItemMapper {
     @Mapping(target = "bookId", source = "book.id")
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "quantity", source = "quantity")
-    @Mapping(target = "price", source = "price")
     OrderItemResponseDto toDto(OrderItem orderItem);
 }
