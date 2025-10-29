@@ -32,6 +32,12 @@ class BookControllerIntegrationTest {
     @Container
     private static final CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
 
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @DynamicPropertySource
     static void setDatasourceProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
@@ -44,16 +50,12 @@ class BookControllerIntegrationTest {
         registry.add("spring.main.allow-bean-definition-overriding", () -> "true");
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
     @DisplayName("GET /books/{id} - return a book")
-    @Sql(scripts = "classpath:scripts/insert-books.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/insert-books.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getBookById_integration() throws Exception {
         MvcResult result = mockMvc.perform(get("/books/1")
                         .accept(MediaType.APPLICATION_JSON))
@@ -69,8 +71,10 @@ class BookControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /books - returns a list of books")
-    @Sql(scripts = "classpath:scripts/insert-books.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/insert-books.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void findAll_integration() throws Exception {
         MvcResult result = mockMvc.perform(get("/books")
                         .accept(MediaType.APPLICATION_JSON))
@@ -83,8 +87,10 @@ class BookControllerIntegrationTest {
 
     @Test
     @DisplayName("POST /books - creates a book")
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void createBook_integration() throws Exception {
         CreateBookRequestDto createReq = new CreateBookRequestDto();
         createReq.setTitle("Integration Book");

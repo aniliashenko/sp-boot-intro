@@ -54,7 +54,7 @@ class BookServiceTest {
     @DisplayName("Create book with valid data")
     void createBook_ValidRequestDto_ReturnsBookDto() {
         // Given
-        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+        final CreateBookRequestDto requestDto = new CreateBookRequestDto();
         requestDto.setTitle("Test Book");
         requestDto.setAuthor("Test Author");
         requestDto.setIsbn("1234567890");
@@ -62,10 +62,10 @@ class BookServiceTest {
         requestDto.setDescription("Test Description");
         requestDto.setCoverImage("test.jpg");
 
-        Book book = new Book();
+        final Book book = new Book();
         book.setTitle("Test Book");
 
-        BookDto expected = new BookDto();
+        final BookDto expected = new BookDto();
         expected.setTitle("Test Book");
         expected.setAuthor("Test Author");
         expected.setIsbn("1234567890");
@@ -92,12 +92,12 @@ class BookServiceTest {
     @DisplayName("Find all books with pagination")
     void findAll_ValidPageable_ReturnsPageOfBookDto() {
         // Given
-        Pageable pageable = PageRequest.of(0, 10);
-        Book book = new Book();
+        final Pageable pageable = PageRequest.of(0, 10);
+        final Book book = new Book();
         book.setTitle("Test Book");
-        Page<Book> bookPage = new PageImpl<>(List.of(book), pageable, 1);
+        final Page<Book> bookPage = new PageImpl<>(List.of(book), pageable, 1);
 
-        BookDto bookDto = new BookDto();
+        final BookDto bookDto = new BookDto();
         bookDto.setTitle("Test Book");
         bookDto.setAuthor("Test Author");
         bookDto.setIsbn("1234567890");
@@ -120,11 +120,11 @@ class BookServiceTest {
     @DisplayName("Get existing book by id")
     void getBookById_ValidId_ReturnsBookDto() {
         // Given
-        Long bookId = 1L;
-        Book book = new Book();
+        final Long bookId = 1L;
+        final Book book = new Book();
         book.setTitle("Test Book");
 
-        BookDto expected = new BookDto();
+        final BookDto expected = new BookDto();
         expected.setTitle("Test Book");
         expected.setAuthor("Test Author");
         expected.setIsbn("1234567890");
@@ -146,7 +146,7 @@ class BookServiceTest {
     @DisplayName("Get non-existing book by id")
     void getBookById_InvalidId_ThrowsException() {
         // Given
-        Long invalidId = 999L;
+        final Long invalidId = 999L;
         when(bookRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -159,18 +159,18 @@ class BookServiceTest {
     @DisplayName("Update existing book")
     void updateBookById_ValidId_ReturnsUpdatedBookDto() {
         // Given
-        Long bookId = 1L;
-        UpdateBookRequestDto requestDto = new UpdateBookRequestDto();
+        final Long bookId = 1L;
+        final UpdateBookRequestDto requestDto = new UpdateBookRequestDto();
         requestDto.setTitle("Updated Title");
         requestDto.setPrice(BigDecimal.valueOf(39.99));
         requestDto.setAuthor("Updated Author");
 
-        Book existingBook = new Book();
+        final Book existingBook = new Book();
         existingBook.setTitle("Original Title");
         existingBook.setAuthor("Original Author");
         existingBook.setPrice(BigDecimal.valueOf(29.99));
 
-        BookDto expected = new BookDto();
+        final BookDto expected = new BookDto();
         expected.setTitle("Updated Title");
         expected.setAuthor("Updated Author");
         expected.setPrice(BigDecimal.valueOf(39.99));
@@ -194,8 +194,8 @@ class BookServiceTest {
     @DisplayName("Update non-existing book")
     void updateBookById_InvalidId_ThrowsException() {
         // Given
-        Long invalidId = 999L;
-        UpdateBookRequestDto requestDto = new UpdateBookRequestDto();
+        final Long invalidId = 999L;
+        final UpdateBookRequestDto requestDto = new UpdateBookRequestDto();
         when(bookRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -208,7 +208,7 @@ class BookServiceTest {
     @DisplayName("Delete existing book")
     void deleteBookById_ValidId_DeletesBook() {
         // Given
-        Long bookId = 1L;
+        final Long bookId = 1L;
         when(bookRepository.existsById(bookId)).thenReturn(true);
 
         // When
@@ -223,7 +223,7 @@ class BookServiceTest {
     @DisplayName("Delete non-existing book")
     void deleteBookById_InvalidId_ThrowsException() {
         // Given
-        Long invalidId = 999L;
+        final Long invalidId = 999L;
         when(bookRepository.existsById(invalidId)).thenReturn(false);
 
         // When & Then
@@ -237,18 +237,19 @@ class BookServiceTest {
     @DisplayName("Search books with parameters")
     void search_ValidParameters_ReturnsFilteredBooks() {
         // Given
-        BookSearchParametersDto parametersDto = new BookSearchParametersDto("Title", "Author");
-        Pageable pageable = PageRequest.of(0, 10);
+        final BookSearchParametersDto parametersDto = new BookSearchParametersDto(
+                "Title", "Author");
+        final Pageable pageable = PageRequest.of(0, 10);
 
-        Book book = new Book();
+        final Book book = new Book();
         book.setTitle("Test Book");
-        Page<Book> bookPage = new PageImpl<>(List.of(book), pageable, 1);
+        final Page<Book> bookPage = new PageImpl<>(List.of(book), pageable, 1);
 
-        BookDto bookDto = new BookDto();
+        final BookDto bookDto = new BookDto();
         bookDto.setTitle("Test Book");
         bookDto.setAuthor("Test Author");
 
-        Specification<Book> specification = (root, query, criteriaBuilder) -> null;
+        final Specification<Book> specification = (root, query, criteriaBuilder) -> null;
 
         when(bookSpecificationBuilder.build(parametersDto)).thenReturn(specification);
         when(bookRepository.findAll(specification, pageable)).thenReturn(bookPage);
@@ -269,18 +270,18 @@ class BookServiceTest {
     @DisplayName("Get books by category id")
     void getBooksByCategoryId_ValidCategoryId_ReturnsBooksWithoutCategoryIds() {
         // Given
-        Long categoryId = 1L;
-        Book book1 = new Book();
+        final Long categoryId = 1L;
+        final Book book1 = new Book();
         book1.setTitle("Book 1");
-        Book book2 = new Book();
+        final Book book2 = new Book();
         book2.setTitle("Book 2");
-        List<Book> books = List.of(book1, book2);
+        final List<Book> books = List.of(book1, book2);
 
-        BookDtoWithoutCategoryIds dto1 = new BookDtoWithoutCategoryIds();
+        final BookDtoWithoutCategoryIds dto1 = new BookDtoWithoutCategoryIds();
         dto1.setTitle("Book 1");
         dto1.setAuthor("Author 1");
 
-        BookDtoWithoutCategoryIds dto2 = new BookDtoWithoutCategoryIds();
+        final BookDtoWithoutCategoryIds dto2 = new BookDtoWithoutCategoryIds();
         dto2.setTitle("Book 2");
         dto2.setAuthor("Author 2");
 

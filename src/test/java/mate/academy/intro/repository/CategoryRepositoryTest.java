@@ -25,6 +25,9 @@ class CategoryRepositoryTest {
     @Container
     private static final CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @DynamicPropertySource
     static void setDatasourceProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
@@ -33,9 +36,6 @@ class CategoryRepositoryTest {
         registry.add("spring.liquibase.enabled", () -> false);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
-
-    @Autowired
-    private CategoryRepository categoryRepository;
 
     @Test
     @DisplayName("Save and find category by ID")
@@ -66,7 +66,8 @@ class CategoryRepositoryTest {
     @Test
     @DisplayName("Delete category by ID")
     void deleteCategoryById() {
-        Category savedCategory = categoryRepository.save(createTestCategory("To Delete", "To be deleted"));
+        Category savedCategory = categoryRepository.save(createTestCategory(
+                "To Delete", "To be deleted"));
         Long id = savedCategory.getId();
 
         categoryRepository.deleteById(id);
@@ -78,7 +79,8 @@ class CategoryRepositoryTest {
     @Test
     @DisplayName("Find category by name")
     void findCategoryByName() {
-        Category savedCategory = categoryRepository.save(createTestCategory("Fantasy", "Fantasy books"));
+        Category savedCategory = categoryRepository.save(createTestCategory(
+                "Fantasy", "Fantasy books"));
 
         Optional<Category> foundCategory = categoryRepository.findAll()
                 .stream()
@@ -93,7 +95,8 @@ class CategoryRepositoryTest {
     @Test
     @DisplayName("Update category description")
     void updateCategory() {
-        Category category = categoryRepository.save(createTestCategory("Tech", "Technical books"));
+        Category category = categoryRepository.save(createTestCategory(
+                "Tech", "Technical books"));
 
         category.setDescription("Updated technical books");
         Category updatedCategory = categoryRepository.save(category);
@@ -106,8 +109,10 @@ class CategoryRepositoryTest {
     @Test
     @DisplayName("Check unique name constraint")
     void checkUniqueName() {
-        Category category1 = createTestCategory("Unique", "First category");
-        Category category2 = createTestCategory("Unique", "Second category with same name");
+        Category category1 = createTestCategory("Unique",
+                "First category");
+        Category category2 = createTestCategory("Unique",
+                "Second category with same name");
 
         categoryRepository.save(category1);
 

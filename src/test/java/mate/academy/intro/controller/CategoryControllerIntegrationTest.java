@@ -36,6 +36,12 @@ class CategoryControllerIntegrationTest {
     @Container
     private static final CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
 
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @DynamicPropertySource
     static void setDatasourceProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
@@ -47,16 +53,12 @@ class CategoryControllerIntegrationTest {
         registry.add("spring.main.allow-bean-definition-overriding", () -> "true");
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
     @DisplayName("GET /categories/{id} - returns a category from DB")
-    @Sql(scripts = "classpath:scripts/insert-books.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/insert-books.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getCategoryById_integration() throws Exception {
         MvcResult result = mockMvc.perform(get("/categories/1")
                         .accept(MediaType.APPLICATION_JSON))
@@ -72,8 +74,10 @@ class CategoryControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /categories - returns a list of categories")
-    @Sql(scripts = "classpath:scripts/insert-books.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/insert-books.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getAllCategories_integration() throws Exception {
         MvcResult result = mockMvc.perform(get("/categories")
                         .accept(MediaType.APPLICATION_JSON))
@@ -81,16 +85,20 @@ class CategoryControllerIntegrationTest {
                 .andReturn();
 
         String json = result.getResponse().getContentAsString();
-        List<CategoryDto> list = objectMapper.readValue(json, new TypeReference<>() {});
+        List<CategoryDto> list = objectMapper.readValue(json,
+                new TypeReference<>() {});
 
         assertThat(list).isNotEmpty();
-        assertThat(list.stream().anyMatch(c -> "Fiction".equals(c.getName()))).isTrue();
+        assertThat(list.stream().anyMatch(c -> "Fiction"
+                .equals(c.getName()))).isTrue();
     }
 
     @Test
     @DisplayName("POST /categories - creates a category")
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void createCategory_integration() throws Exception {
         CategoryRequestDto req = new CategoryRequestDto();
         req.setName("NewCat");
@@ -113,8 +121,10 @@ class CategoryControllerIntegrationTest {
 
     @Test
     @DisplayName("PUT /categories/{id} - updates category")
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void updateCategory_integration() throws Exception {
         CategoryRequestDto createReq = new CategoryRequestDto();
         createReq.setName("ToUpdate");
@@ -126,7 +136,8 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        CategoryDto created = objectMapper.readValue(createResult.getResponse().getContentAsString(), CategoryDto.class);
+        CategoryDto created = objectMapper.readValue(createResult
+                .getResponse().getContentAsString(), CategoryDto.class);
         Long id = created.getId();
 
         CategoryRequestDto updateReq = new CategoryRequestDto();
@@ -140,13 +151,17 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        CategoryDto updated = objectMapper.readValue(updateResult.getResponse().getContentAsString(), CategoryDto.class);
+        CategoryDto updated = objectMapper.readValue(updateResult
+                .getResponse().getContentAsString(), CategoryDto.class);
         assertThat(updated.getName()).isEqualTo("UpdatedName");
     }
+
     @Test
     @DisplayName("DELETE /categories/{id} - deletes category")
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void deleteCategory_integration() throws Exception {
         CategoryRequestDto createReq = new CategoryRequestDto();
         createReq.setName("ToDelete");
@@ -158,7 +173,8 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        CategoryDto created = objectMapper.readValue(createResult.getResponse().getContentAsString(), CategoryDto.class);
+        CategoryDto created = objectMapper.readValue(createResult
+                .getResponse().getContentAsString(), CategoryDto.class);
         Long id = created.getId();
 
         mockMvc.perform(delete("/categories/{id}", id))
@@ -170,8 +186,10 @@ class CategoryControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /categories/{id}/books - returns books by category")
-    @Sql(scripts = "classpath:scripts/insert-books-with-categories.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/insert-books-with-categories.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void getBooksByCategory_integration() throws Exception {
         MvcResult result = mockMvc.perform(get("/categories/1/books")
                         .accept(MediaType.APPLICATION_JSON))
@@ -179,10 +197,12 @@ class CategoryControllerIntegrationTest {
                 .andReturn();
 
         String json = result.getResponse().getContentAsString();
-        List<BookDtoWithoutCategoryIds> books = objectMapper.readValue(json, new TypeReference<>() {});
+        List<BookDtoWithoutCategoryIds> books = objectMapper
+                .readValue(json, new TypeReference<>() {});
 
         assertThat(books).isNotEmpty();
         assertThat(books.size()).isEqualTo(2);
-        assertThat(books.stream().anyMatch(b -> "Book A".equals(b.getTitle()))).isTrue();
+        assertThat(books.stream().anyMatch(b -> "Book A"
+                .equals(b.getTitle()))).isTrue();
     }
 }
