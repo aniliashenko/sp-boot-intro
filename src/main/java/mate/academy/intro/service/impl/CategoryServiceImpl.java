@@ -2,7 +2,6 @@ package mate.academy.intro.service.impl;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import mate.academy.intro.dto.CategoryDto;
 import mate.academy.intro.dto.CategoryRequestDto;
@@ -47,8 +46,8 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto update(Long id, CategoryRequestDto categoryDto) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() ->
-                        new NoSuchElementException(
-                                "Cannot update. Category not found with id: " + id));
+                        new EntityNotFoundException("Cannot update. "
+                                + "Category not found with id: " + id));
 
         categoryMapper.updateCategoryFromDto(categoryDto, existingCategory);
 
@@ -60,7 +59,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public void deleteById(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new NoSuchElementException("Cannot delete. Category not found with id: " + id);
+            throw new EntityNotFoundException("Cannot delete. Category not found with id: " + id);
         }
         categoryRepository.deleteById(id);
     }
