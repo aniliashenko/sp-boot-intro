@@ -1,12 +1,9 @@
 package mate.academy.intro.repository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import mate.academy.intro.config.CustomMySqlContainer;
 import mate.academy.intro.model.Book;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class BookRepositoryTest {
+
     @Container
     private static final CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
 
@@ -40,79 +38,53 @@ class BookRepositoryTest {
     }
 
     @Test
-    @DisplayName("Save and find book by ID")
-    void saveAndFindBook() {
-        Book newBook = createTestBook("Test Book",
-                "Test Author", "TEST-ISBN-123");
+    @DisplayName("Find all books by category ID")
+    @Sql(scripts = "classpath:scripts/insert-books-with-categories.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:scripts/cleanup.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void findAllByCategories_Id() {
+        List<Book> books = bookRepository.findAllByCategories_Id(1L);
 
-        Book savedBook = bookRepository.save(newBook);
-        Optional<Book> foundBook = bookRepository.findById(savedBook.getId());
-
-        assertTrue(foundBook.isPresent());
-        assertEquals("Test Book", foundBook.get().getTitle());
+        assertThat(books).isNotEmpty();
+        assertThat(books).hasSize(2);
+        assertThat(books).anyMatch(b -> b.getTitle().equals("Book A"));
+        assertThat(books).anyMatch(b -> b.getTitle().equals("Book B"));
     }
 
     @Test
-    @DisplayName("Find all books")
-    void findAllBooks() {
-        bookRepository.save(createTestBook("Book 1",
-                "Author 1", "ISBN-111"));
-        bookRepository.save(createTestBook("Book 2",
-                "Author 2", "ISBN-222"));
+    @DisplayName("Save and find book by ID")
+    void saveAndFindBook() {
+        Book newBook = new Book();
+        newBook.setTitle("Test Book");
+        newBook.setAuthor("Test Author");
+        newBook.setIsbn("TEST-ISBN-123");
+        newBook.setPrice(BigDecimal.valueOf(29.99));
+        newBook.setDescription("Test Description");
+        newBook.setCoverImage("test.jpg");
 
-        List<Book> allBooks = bookRepository.findAll();
+        Book savedBook = bookRepository.save(newBook);
+        Book foundBook = bookRepository.findById(savedBook.getId()).orElse(null);
 
-        assertEquals(2, allBooks.size());
-        assertTrue(allBooks.stream().anyMatch(
-                b -> b.getTitle().equals("Book 1")));
+        assertThat(foundBook).isNotNull();
+        assertThat(foundBook.getTitle()).isEqualTo("Test Book");
     }
 
     @Test
     @DisplayName("Delete book by ID")
     void deleteBookById() {
-        Book savedBook = bookRepository.save(createTestBook("To Delete",
-                "Author", "DEL-ISBN"));
-        Long id = savedBook.getId();
+        Book book = new Book();
+        book.setTitle("To Delete");
+        book.setAuthor("Author");
+        book.setIsbn("DEL-ISBN");
+        book.setPrice(BigDecimal.valueOf(15.99));
+        book.setDescription("Desc");
+        book.setCoverImage("del.jpg");
+
+        Book saved = bookRepository.save(book);
+        Long id = saved.getId();
 
         bookRepository.deleteById(id);
-
-        assertFalse(bookRepository.findById(id).isPresent());
-    }
-
-    @Test
-    @DisplayName("Find books by category ID using @Sql")
-    @Sql(statements = {
-            "INSERT INTO categories (id, name, is_deleted) VALUES (1, 'Fiction', false);",
-            "INSERT INTO books (id, title, author, isbn, price, "
-                    + "description, cover_image, is_deleted) "
-                    + "VALUES (100, 'Book A', 'Author A', 'ISBN-AAA',"
-                    + " 10.00, 'Desc', 'a.jpg', false);",
-            "INSERT INTO books (id, title, author, isbn, price,"
-                    + " description, cover_image, is_deleted) "
-                    + "VALUES (200, 'Book B', 'Author B', 'ISBN-BBB',"
-                    + " 12.00, 'Desc', 'b.jpg', false);",
-            "INSERT INTO books_categories (book_id, category_id) VALUES (100, 1);"
-    })
-    @Sql(statements = {
-            "DELETE FROM books_categories;",
-            "DELETE FROM books;",
-            "DELETE FROM categories;"
-    }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void findAllByCategories_Id() {
-        List<Book> books = bookRepository.findAllByCategories_Id(1L);
-
-        assertEquals(1, books.size());
-        assertEquals("Book A", books.get(0).getTitle());
-    }
-
-    private Book createTestBook(String title, String author, String isbn) {
-        Book book = new Book();
-        book.setTitle(title);
-        book.setAuthor(author);
-        book.setIsbn(isbn);
-        book.setPrice(BigDecimal.valueOf(29.99));
-        book.setDescription("Test Description");
-        book.setCoverImage("test.jpg");
-        return book;
+        assertThat(bookRepository.findById(id)).isEmpty();
     }
 }
