@@ -31,7 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc(addFilters = false)
 @Testcontainers
-class CategoryControllerIntegrationTest {
+class CategoryControllerTest {
 
     @Container
     private static final CustomMySqlContainer mysqlContainer = CustomMySqlContainer.getInstance();
@@ -67,9 +67,16 @@ class CategoryControllerIntegrationTest {
 
         String json = result.getResponse().getContentAsString();
         CategoryDto dto = objectMapper.readValue(json, CategoryDto.class);
-
         assertThat(dto).isNotNull();
+        assertThat(dto.getId()).isEqualTo(1L);
         assertThat(dto.getName()).isEqualTo("Fiction");
+    }
+
+    @Test
+    @DisplayName("GET /categories/{id} - returns 404 for non-existing id")
+    void getCategoryById_notFound() throws Exception {
+        mockMvc.perform(get("/categories/999"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -84,13 +91,11 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String json = result.getResponse().getContentAsString();
-        List<CategoryDto> list = objectMapper.readValue(json,
-                new TypeReference<>() {});
+        List<CategoryDto> list = objectMapper.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<List<CategoryDto>>() {});
 
         assertThat(list).isNotEmpty();
-        assertThat(list.stream().anyMatch(c -> "Fiction"
-                .equals(c.getName()))).isTrue();
+        assertThat(list.stream().anyMatch(c -> "Fiction".equals(c.getName()))).isTrue();
     }
 
     @Test
@@ -111,12 +116,25 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        String json = result.getResponse().getContentAsString();
-        CategoryDto created = objectMapper.readValue(json, CategoryDto.class);
+        CategoryDto created = objectMapper.readValue(result.getResponse()
+                .getContentAsString(), CategoryDto.class);
 
         assertThat(created).isNotNull();
         assertThat(created.getName()).isEqualTo("NewCat");
         assertThat(created.getId()).isNotNull();
+        assertThat(created.getDescription()).isEqualTo("desc");
+    }
+
+    @Test
+    @DisplayName("POST /categories - invalid request returns 400")
+    void createCategory_invalidRequest_returns400() throws Exception {
+        CategoryRequestDto req = new CategoryRequestDto();
+        req.setDescription("no name");
+
+        mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -126,6 +144,7 @@ class CategoryControllerIntegrationTest {
     @Sql(scripts = "classpath:scripts/cleanup.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void updateCategory_integration() throws Exception {
+        // create first
         CategoryRequestDto createReq = new CategoryRequestDto();
         createReq.setName("ToUpdate");
         createReq.setDescription("old");
@@ -136,10 +155,11 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        CategoryDto created = objectMapper.readValue(createResult
-                .getResponse().getContentAsString(), CategoryDto.class);
+        CategoryDto created = objectMapper.readValue(createResult.getResponse()
+                .getContentAsString(), CategoryDto.class);
         Long id = created.getId();
 
+        // update
         CategoryRequestDto updateReq = new CategoryRequestDto();
         updateReq.setName("UpdatedName");
         updateReq.setDescription("new");
@@ -151,9 +171,23 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        CategoryDto updated = objectMapper.readValue(updateResult
-                .getResponse().getContentAsString(), CategoryDto.class);
+        CategoryDto updated = objectMapper.readValue(updateResult.getResponse()
+                .getContentAsString(), CategoryDto.class);
         assertThat(updated.getName()).isEqualTo("UpdatedName");
+        assertThat(updated.getId()).isEqualTo(id);
+    }
+
+    @Test
+    @DisplayName("PUT /categories/{id} - non-existing id returns 404")
+    void updateCategory_notFound_returns404() throws Exception {
+        CategoryRequestDto updateReq = new CategoryRequestDto();
+        updateReq.setName("NoSuch");
+        updateReq.setDescription("desc");
+
+        mockMvc.perform(put("/categories/{id}", 999)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -163,6 +197,7 @@ class CategoryControllerIntegrationTest {
     @Sql(scripts = "classpath:scripts/cleanup.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void deleteCategory_integration() throws Exception {
+        // create
         CategoryRequestDto createReq = new CategoryRequestDto();
         createReq.setName("ToDelete");
         createReq.setDescription("desc");
@@ -173,14 +208,23 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        CategoryDto created = objectMapper.readValue(createResult
-                .getResponse().getContentAsString(), CategoryDto.class);
+        CategoryDto created = objectMapper.readValue(createResult.getResponse()
+                .getContentAsString(), CategoryDto.class);
         Long id = created.getId();
 
+        // delete
         mockMvc.perform(delete("/categories/{id}", id))
                 .andExpect(status().isNoContent());
 
+        // ensure deleted
         mockMvc.perform(get("/categories/{id}", id))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("DELETE /categories/{id} - non-existing id returns 404")
+    void deleteCategory_notFound_returns404() throws Exception {
+        mockMvc.perform(delete("/categories/{id}", 999))
                 .andExpect(status().isNotFound());
     }
 
@@ -196,13 +240,12 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String json = result.getResponse().getContentAsString();
         List<BookDtoWithoutCategoryIds> books = objectMapper
-                .readValue(json, new TypeReference<>() {});
+                .readValue(result.getResponse().getContentAsString(),
+                        new TypeReference<List<BookDtoWithoutCategoryIds>>() {});
 
         assertThat(books).isNotEmpty();
         assertThat(books.size()).isEqualTo(2);
-        assertThat(books.stream().anyMatch(b -> "Book A"
-                .equals(b.getTitle()))).isTrue();
+        assertThat(books.stream().anyMatch(b -> "Book A".equals(b.getTitle()))).isTrue();
     }
 }

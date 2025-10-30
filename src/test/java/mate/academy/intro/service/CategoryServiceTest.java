@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import mate.academy.intro.dto.CategoryDto;
 import mate.academy.intro.dto.CategoryRequestDto;
@@ -189,7 +188,7 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("Update non-existing category")
-    void update_InvalidId_ThrowsNoSuchElementException() {
+    void update_InvalidId_ThrowsEntityNotFoundException() {
         // Given
         Long invalidId = 999L;
         CategoryRequestDto requestDto = new CategoryRequestDto();
@@ -199,7 +198,7 @@ class CategoryServiceTest {
         when(categoryRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(NoSuchElementException.class,
+        assertThrows(EntityNotFoundException.class,
                 () -> categoryService.update(invalidId, requestDto));
         verify(categoryRepository).findById(invalidId);
         verifyNoMoreInteractions(categoryMapper, categoryRepository);
@@ -222,13 +221,13 @@ class CategoryServiceTest {
 
     @Test
     @DisplayName("Delete non-existing category")
-    void deleteById_InvalidId_ThrowsNoSuchElementException() {
+    void deleteById_InvalidId_ThrowsEntityNotFoundException() {
         // Given
         Long invalidId = 999L;
         when(categoryRepository.existsById(invalidId)).thenReturn(false);
 
         // When & Then
-        assertThrows(NoSuchElementException.class,
+        assertThrows(EntityNotFoundException.class,
                 () -> categoryService.deleteById(invalidId));
         verify(categoryRepository).existsById(invalidId);
         verifyNoMoreInteractions(categoryRepository);
