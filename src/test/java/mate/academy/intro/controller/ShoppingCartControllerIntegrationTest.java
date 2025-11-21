@@ -1,6 +1,9 @@
 package mate.academy.intro.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -72,13 +75,15 @@ class ShoppingCartControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ShoppingCartResponseDto dto = objectMapper.readValue(
+        ShoppingCartResponseDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(),
-                ShoppingCartResponseDto.class);
+                ShoppingCartResponseDto.class
+        );
 
-        assertThat(dto).isNotNull();
-        assertThat(dto.getUserId()).isEqualTo(1L);
-        assertThat(dto.getCartItems()).isNotEmpty();
+        assertNotNull(actual);
+        assertEquals(1L, actual.getUserId());
+        assertNotNull(actual.getCartItems());
+        assertTrue(actual.getCartItems().size() > 0);
     }
 
     @Test
@@ -100,15 +105,19 @@ class ShoppingCartControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ShoppingCartResponseDto cart = objectMapper.readValue(
+        ShoppingCartResponseDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(),
-                ShoppingCartResponseDto.class);
+                ShoppingCartResponseDto.class
+        );
 
-        assertThat(cart).isNotNull();
+        assertNotNull(actual);
+        assertEquals(1L, actual.getUserId());
+        assertNotNull(actual.getCartItems());
 
-        assertThat(cart.getCartItems())
-                .anyMatch(item -> Long.valueOf(100L).equals(item.getBookId())
-                        && item.getQuantity() == 3);
+        boolean found = actual.getCartItems().stream()
+                .anyMatch(item -> item.getBookId().equals(100L) && item.getQuantity() == 3);
+
+        assertTrue(found);
     }
 
     @Test
@@ -129,10 +138,14 @@ class ShoppingCartControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        CartItemResponseDto updated = objectMapper.readValue(
-                result.getResponse().getContentAsString(), CartItemResponseDto.class);
+        CartItemResponseDto actual = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                CartItemResponseDto.class
+        );
 
-        assertThat(updated.getQuantity()).isEqualTo(5);
+        assertNotNull(actual);
+        assertEquals(10L, actual.getId());
+        assertEquals(5, actual.getQuantity());
     }
 
     @Test
@@ -145,5 +158,20 @@ class ShoppingCartControllerIntegrationTest {
         mockMvc.perform(delete("/cart/cart-items/10")
                         .principal(getAuth()))
                 .andExpect(status().isNoContent());
+
+        MvcResult result = mockMvc.perform(get("/cart")
+                        .principal(getAuth()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ShoppingCartResponseDto cart = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                ShoppingCartResponseDto.class
+        );
+
+        boolean exists = cart.getCartItems().stream()
+                .anyMatch(item -> item.getId().equals(10L));
+
+        assertFalse(exists);
     }
 }
