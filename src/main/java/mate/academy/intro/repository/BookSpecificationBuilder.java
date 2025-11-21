@@ -9,21 +9,24 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class BookSpecificationBuilder implements SpecificationBuilder<Book> {
-    private SpecificationProviderManager<Book> bookSpecificationProviderManager;
+    private final SpecificationProviderManager<Book> bookSpecificationProviderManager;
 
     @Override
     public Specification<Book> build(BookSearchParametersDto parametersDto) {
         Specification<Book> specification = Specification.where(null);
-        if (parametersDto.author() != null && !parametersDto.author().isEmpty()) {
+
+        if (parametersDto.author() != null && !parametersDto.author().isBlank()) {
             specification = specification.and(bookSpecificationProviderManager
                     .getSpecificationProvider("author")
                     .getSpecification(parametersDto.author()));
         }
-        if (parametersDto.author() != null && !parametersDto.titlePart().isEmpty()) {
+
+        if (parametersDto.titlePart() != null && !parametersDto.titlePart().isBlank()) {
             specification = specification.and(bookSpecificationProviderManager
                     .getSpecificationProvider("titlePart")
                     .getSpecification(parametersDto.titlePart()));
         }
+
         return specification;
     }
 }
