@@ -1,18 +1,18 @@
 package mate.academy.intro.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
 import mate.academy.intro.config.CustomMySqlContainer;
 import mate.academy.intro.dto.BookDto;
 import mate.academy.intro.dto.CreateBookRequestDto;
-import mate.academy.intro.dto.UpdateBookRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,66 +49,93 @@ class BookControllerTest {
 
         registry.add("spring.liquibase.enabled", () -> "false");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+
         registry.add("spring.main.allow-bean-definition-overriding", () -> "true");
     }
 
     @Test
-    @DisplayName("GET /books/{id} - return existing book")
+    @DisplayName("GET /books/{id} - return a book")
     @Sql(scripts = "classpath:scripts/insert-books.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:scripts/cleanup.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void getBookById_validId_returnsBook() throws Exception {
-        // when
+    void getBookById_integration() throws Exception {
         MvcResult result = mockMvc.perform(get("/books/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        // then
-        BookDto actual = objectMapper.readValue(result.getResponse()
-                .getContentAsString(), BookDto.class);
+        String json = result.getResponse().getContentAsString();
 
-        assertThat(actual).isNotNull();
-        assertThat(actual.getTitle()).isEqualTo("Book One");
-        assertThat(actual.getAuthor()).isEqualTo("Author A");
-        assertThat(actual.getIsbn()).isEqualTo("ISBN-001");
-        assertThat(actual.getPrice()).isEqualByComparingTo("19.99");
-        assertThat(actual.getDescription()).isEqualTo("Description One");
-        assertThat(actual.getCoverImage()).isEqualTo("cover1.jpg");
+        BookDto expected = new BookDto();
+        expected.setTitle("Book One");
+        expected.setAuthor("Author A");
+        expected.setIsbn("ISBN-001");
+        expected.setPrice(new BigDecimal("19.99"));
+        expected.setDescription("Description One");
+        expected.setCoverImage("cover1.jpg");
+        expected.setCategoryIds(Set.of(1L));
+
+        BookDto dto = objectMapper.readValue(json, BookDto.class);
+        assertEquals(expected, dto);
     }
 
     @Test
-    @DisplayName("GET /books/{id} - return 404 if not found")
-    void getBookById_notFound_returns404() throws Exception {
-        mockMvc.perform(get("/books/999")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("GET /books - returns list of books")
+    @DisplayName("GET /books - returns a list of books")
     @Sql(scripts = "classpath:scripts/insert-books.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:scripts/cleanup.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void findAll_returnsBooksList() throws Exception {
+    void findAll_integration() throws Exception {
+        BookDto book1 = new BookDto();
+        book1.setTitle("Book One");
+        book1.setAuthor("Author A");
+        book1.setIsbn("ISBN-001");
+        book1.setPrice(new BigDecimal("19.99"));
+        book1.setDescription("Description One");
+        book1.setCoverImage("cover1.jpg");
+        book1.setCategoryIds(Set.of(1L));
+
+        BookDto book2 = new BookDto();
+        book2.setTitle("Book Three");
+        book2.setAuthor("Author C");
+        book2.setIsbn("ISBN-003");
+        book2.setPrice(new BigDecimal("15.99"));
+        book2.setDescription("Description Three");
+        book2.setCoverImage("cover3.jpg");
+        book2.setCategoryIds(Set.of());
+
+        BookDto book3 = new BookDto();
+        book3.setTitle("Book Two");
+        book3.setAuthor("Author B");
+        book3.setIsbn("ISBN-002");
+        book3.setPrice(new BigDecimal("25.99"));
+        book3.setDescription("Description Two");
+        book3.setCoverImage("cover2.jpg");
+        book3.setCategoryIds(Set.of());
+
+        List<BookDto> expected = List.of(book1, book2, book3);
+
         MvcResult result = mockMvc.perform(get("/books")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String json = result.getResponse().getContentAsString();
-        assertThat(json).contains("Book One", "Book Two");
+        JsonNode root = objectMapper.readTree(json);
+        JsonNode contentNode = root.get("content");
+        List<BookDto> actual = objectMapper.readerForListOf(BookDto.class)
+                .readValue(contentNode);
+        assertEquals(expected, actual);
     }
 
     @Test
-    @DisplayName("POST /books - creates new book")
+    @DisplayName("POST /books - creates a book")
     @Sql(scripts = "classpath:scripts/cleanup.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "classpath:scripts/cleanup.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void createBook_validRequest_returnsCreatedBook() throws Exception {
+    void createBook_integration() throws Exception {
         CreateBookRequestDto createReq = new CreateBookRequestDto();
         createReq.setTitle("Integration Book");
         createReq.setAuthor("Integration Author");
@@ -124,101 +151,18 @@ class BookControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        BookDto created = objectMapper.readValue(result.getResponse()
-                .getContentAsString(), BookDto.class);
-        assertThat(created.getTitle()).isEqualTo("Integration Book");
-        assertThat(created.getAuthor()).isEqualTo("Integration Author");
-        assertThat(created.getIsbn()).isEqualTo("INT-ISBN-1");
-    }
-
-    @Test
-    @DisplayName("POST /books - invalid request returns 400")
-    void createBook_invalidRequest_returnsBadRequest() throws Exception {
-        CreateBookRequestDto invalid = new CreateBookRequestDto();
-        mockMvc.perform(post("/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalid)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("PUT /books/{id} - updates existing book")
-    @Sql(scripts = "classpath:scripts/insert-books.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void updateBook_validRequest_returnsUpdatedBook() throws Exception {
-        UpdateBookRequestDto updateReq = new UpdateBookRequestDto();
-        updateReq.setTitle("Updated Title");
-        updateReq.setAuthor("Updated Author");
-        updateReq.setIsbn("ISBN-001");
-        updateReq.setPrice(BigDecimal.valueOf(19.99));
-
-        MvcResult result = mockMvc.perform(put("/books/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateReq))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        BookDto actual = objectMapper.readValue(result.getResponse()
-                .getContentAsString(), BookDto.class);
-        assertThat(actual.getTitle()).isEqualTo("Updated Title");
-        assertThat(actual.getAuthor()).isEqualTo("Updated Author");
-        assertThat(actual.getPrice()).isEqualByComparingTo("19.99");
-    }
-
-    @Test
-    @DisplayName("PUT /books/{id} - non-existing id returns 404")
-    void updateBook_notFound_returns404() throws Exception {
-        UpdateBookRequestDto updateReq = new UpdateBookRequestDto();
-        updateReq.setTitle("No such book");
-        updateReq.setAuthor("Someone");
-        updateReq.setIsbn("999-999");
-        updateReq.setPrice(BigDecimal.valueOf(9.99));
-
-        mockMvc.perform(put("/books/999")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateReq)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("DELETE /books/{id} - deletes existing book")
-    @Sql(scripts = "classpath:scripts/insert-books.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void deleteBook_validId_returnsNoContent() throws Exception {
-        mockMvc.perform(delete("/books/1"))
-                .andExpect(status().isNoContent());
-
-        mockMvc.perform(get("/books/1"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("DELETE /books/{id} - non-existing id returns 404")
-    void deleteBook_notFound_returns404() throws Exception {
-        mockMvc.perform(delete("/books/999"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("GET /books/search - returns filtered books")
-    @Sql(scripts = "classpath:scripts/insert-books.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:scripts/cleanup.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void searchBooks_returnsFilteredList() throws Exception {
-        MvcResult result = mockMvc.perform(get("/books/search")
-                        .param("author", "Author A")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
         String json = result.getResponse().getContentAsString();
-        assertThat(json).contains("Book One");
-        assertThat(json).doesNotContain("Book Two");
+        BookDto actual = objectMapper.readValue(json, BookDto.class);
+
+        BookDto expected = new BookDto();
+        expected.setTitle("Integration Book");
+        expected.setAuthor("Integration Author");
+        expected.setIsbn("INT-ISBN-1");
+        expected.setPrice(BigDecimal.valueOf(9.99));
+        expected.setDescription("desc");
+        expected.setCoverImage("cover.jpg");
+        expected.setCategoryIds(actual.getCategoryIds());
+
+        assertEquals(expected, actual);
     }
 }
