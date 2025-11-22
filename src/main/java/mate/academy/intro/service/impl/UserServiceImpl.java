@@ -1,0 +1,43 @@
+package mate.academy.intro.service.impl;
+
+import jakarta.transaction.Transactional;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import mate.academy.intro.dto.UserRegistrationRequestDto;
+import mate.academy.intro.dto.UserRegistrationResponseDto;
+import mate.academy.intro.exception.RegistrationException;
+import mate.academy.intro.mapper.UserMapper;
+import mate.academy.intro.model.Role;
+import mate.academy.intro.model.User;
+import mate.academy.intro.repository.RoleRepository;
+import mate.academy.intro.repository.UserRepository;
+import mate.academy.intro.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    @Transactional
+    public UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto)
+            throws RegistrationException {
+        if (userRepository.existsByEmail(requestDto.getEmail())) {
+            throw new RegistrationException("User with email "
+                    + requestDto.getEmail() + " already exists");
+        }
+        User user = userMapper.toModel(requestDto);
+        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        Role userRole = roleRepository.findByRole(Role.RoleName.ROLE_USER)
+                .orElseThrow(() -> new RegistrationException(
+                        "Default role " + Role.RoleName.ROLE_USER.name() + " not found"));
+        user.setRoles(Set.of(userRole));
+        userRepository.save(user);
+        return userMapper.toDto(user);
+    }
+}
