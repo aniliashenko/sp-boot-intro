@@ -5,7 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import lombok.Data;
+import mate.academy.intro.model.Category;
 
 @Data
 @Schema(description = "Request DTO for creating a new book")
@@ -42,4 +47,6 @@ public class CreateBookRequestDto {
     @Schema(description = "URL to the book cover image",
             example = "https://example.com/mockingbird.jpg")
     private String coverImage;
+
+    private List<Long> categoryIds;
 }
